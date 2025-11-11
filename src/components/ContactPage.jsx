@@ -23,7 +23,6 @@ const ContactPage = () => {
             ...formData,
             [name]: value
         });
-        // Clear error for this field when user starts typing
         if (errors[name]) {
             setErrors({
                 ...errors,
@@ -83,6 +82,7 @@ const ContactPage = () => {
 
             if (data.success) {
                 setSubmitSuccess(true);
+                setErrors({});
                 setFormData({
                     name: '',
                     email: '',
@@ -90,15 +90,20 @@ const ContactPage = () => {
                     message: ''
                 });
 
-                // Hide success message after 5 seconds
                 setTimeout(() => {
                     setSubmitSuccess(false);
                 }, 5000);
             } else {
                 setErrors({ submit: data.message || 'Failed to send message' });
+                setTimeout(() => {
+                    setErrors({});
+                }, 5000);
             }
         } catch (error) {
             setErrors({ submit: 'Network error. Please try again later.' });
+            setTimeout(() => {
+                setErrors({});
+            }, 5000);
         } finally {
             setIsSubmitting(false);
         }
@@ -138,15 +143,24 @@ const ContactPage = () => {
                             Have questions or need support? We're here to help. Send us a message and we'll respond as soon as possible.
                         </p>
 
-                        {/* Success Message */}
                         {submitSuccess && (
                             <motion.div
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg"
+                                className="mb-6 text-green-700"
                             >
                                 <p className="font-medium">✓ Message sent successfully!</p>
                                 <p className="text-sm">We'll get back to you as soon as possible.</p>
+                            </motion.div>
+                        )}
+
+                        {errors.submit && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="mb-6 text-red-600"
+                            >
+                                <p> {errors.submit}</p>
                             </motion.div>
                         )}
 
@@ -160,9 +174,7 @@ const ContactPage = () => {
                                         value={formData.name}
                                         onChange={handleChange}
                                         placeholder="Name"
-                                        className={`w-full px-4 py-3 rounded-lg border ${
-                                            errors.name ? 'border-red-400' : 'border-gray-300'
-                                        } focus:border-gray-400 focus:outline-none text-gray-800 text-base bg-gray-200`}
+                                        className={`w-full px-4 py-3 rounded-lg border ${errors.name ? 'border-red-400' : 'border-gray-300'} focus:border-gray-400 focus:outline-none text-gray-800 text-base bg-gray-200`}
                                     />
                                     {errors.name && (
                                         <p className="mt-1 text-sm text-red-600">{errors.name}</p>
@@ -177,9 +189,7 @@ const ContactPage = () => {
                                         value={formData.email}
                                         onChange={handleChange}
                                         placeholder="Email"
-                                        className={`w-full px-4 py-3 rounded-lg border ${
-                                            errors.email ? 'border-red-400' : 'border-gray-300'
-                                        } focus:border-gray-400 focus:outline-none text-gray-800 text-base bg-gray-200`}
+                                        className={`w-full px-4 py-3 rounded-lg border ${errors.email ? 'border-red-400' : 'border-gray-300'} focus:border-gray-400 focus:outline-none text-gray-800 text-base bg-gray-200`}
                                     />
                                     {errors.email && (
                                         <p className="mt-1 text-sm text-red-600">{errors.email}</p>
@@ -194,9 +204,7 @@ const ContactPage = () => {
                                         value={formData.subject}
                                         onChange={handleChange}
                                         placeholder="Subject"
-                                        className={`w-full px-4 py-3 rounded-lg border ${
-                                            errors.subject ? 'border-red-400' : 'border-gray-300'
-                                        } focus:border-gray-400 focus:outline-none text-gray-800 text-base bg-gray-200`}
+                                        className={`w-full px-4 py-3 rounded-lg border ${errors.subject ? 'border-red-400' : 'border-gray-300'} focus:border-gray-400 focus:outline-none text-gray-800 text-base bg-gray-200`}
                                     />
                                     {errors.subject && (
                                         <p className="mt-1 text-sm text-red-600">{errors.subject}</p>
@@ -211,9 +219,7 @@ const ContactPage = () => {
                                         onChange={handleChange}
                                         placeholder="Message"
                                         rows="6"
-                                        className={`w-full px-4 py-3 rounded-lg border ${
-                                            errors.message ? 'border-red-400' : 'border-gray-300'
-                                        } focus:border-gray-400 focus:outline-none text-gray-800 text-base bg-gray-200 resize-none`}
+                                        className={`w-full px-4 py-3 rounded-lg border ${errors.message ? 'border-red-400' : 'border-gray-300'} focus:border-gray-400 focus:outline-none text-gray-800 text-base bg-gray-200 resize-none`}
                                     />
                                     {errors.message && (
                                         <p className="mt-1 text-sm text-red-600">{errors.message}</p>
@@ -226,13 +232,25 @@ const ContactPage = () => {
                                     disabled={isSubmitting}
                                     whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
                                     whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
-                                    className={`w-full sm:w-auto text-white px-8 py-3 rounded-full transition-colors text-base font-medium ${
-                                        isSubmitting
-                                            ? 'bg-blue-400 cursor-not-allowed'
-                                            : 'bg-blue-600 hover:bg-blue-700'
-                                    }`}
+                                    className={`w-full sm:w-auto text-white px-8 py-3 rounded-full transition-colors text-base font-medium flex items-center justify-center gap-2 ${isSubmitting
+                                        ? 'bg-blue-400 cursor-not-allowed'
+                                        : 'bg-blue-600 hover:bg-blue-700'
+                                        }`}
                                 >
-                                    {isSubmitting ? 'Sending...' : 'Send Message'}
+                                    {isSubmitting ? (
+                                        <>
+                                            <motion.span
+                                                animate={{ rotate: 360 }}
+                                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                                className="inline-block"
+                                            >
+
+                                            </motion.span>
+                                            Sending...
+                                        </>
+                                    ) : (
+                                        'Send Message'
+                                    )}
                                 </motion.button>
                             </div>
                         </form>
